@@ -147,3 +147,9 @@ extern "C" DLLEXPORT bool SKSEAPI SKSEPlugin_Load(const SKSE::LoadInterface* a_s
 
 	return true;
 }
+
+extern "C" __declspec(dllexport)
+bool IsWheelerOpen()
+{
+	return Wheeler::GetSingleton()->IsWheelerOpen();
+}

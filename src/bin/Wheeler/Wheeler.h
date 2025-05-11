@@ -15,6 +15,12 @@ public:
 		_wheels.emplace_back(std::make_unique<Wheel>());
 	}
 
+	static Wheeler* GetSingleton()
+	{
+		static Wheeler singleton;
+		return std::addressof(singleton);
+	}
+
 	/// <summary>
 	/// Update wheeler, calling draw function etc...
 	/// This function can only be invoked by the renderer.
