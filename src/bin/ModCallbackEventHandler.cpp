@@ -34,6 +34,6 @@ bool ModCallbackEventHandler::Register()
 		return false;
 	}
 	eventSource->AddEventSink(&singleton);
-	INFO("Register {}", typeid(singleton).name());
+	logger::info("Register {}", typeid(singleton).name());
 	return true;
 }

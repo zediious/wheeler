@@ -16,7 +16,7 @@ static float get_resolution_scale_height()
 class Texture
 {
 public:
-	static inline ID3D11Device* device_ = nullptr;  // Should only be set once by Renderer
+	static inline REX::W32::ID3D11Device* device_ = nullptr;  // Should only be set once by Renderer
 
 	/// <summary>
 	/// Load all images.
@@ -25,7 +25,7 @@ public:
 
 	struct Image
 	{
-		ID3D11ShaderResourceView* texture = nullptr;
+		REX::W32::ID3D11ShaderResourceView* texture = nullptr;
 		int32_t width = 0;   // native width
 		int32_t height = 0;  // native height
 	};
@@ -116,7 +116,7 @@ private:
 	static inline std::map<std::string, Image> icon_struct_keyword;
 
 	static bool load_texture_from_file(const char* filename,
-		ID3D11ShaderResourceView** out_srv,
+		REX::W32::ID3D11ShaderResourceView** out_srv,
 		int& out_width,
 		int& out_height);
 	template <typename T>

@@ -46,57 +46,60 @@ void RenderManager::D3DInitHook::thunk()
 {
 	func();
 
-	INFO("RenderManager: Initializing...");
-	auto render_manager = RE::BSRenderManager::GetSingleton();
+	logger::info("RenderManager: Initializing...");
+	auto render_manager = RE::BSGraphics::Renderer::GetSingleton();
 	if (!render_manager) {
 		ERROR("Cannot find render manager. Initialization failed!");
 		return;
 	}
 
-	auto render_data = render_manager->GetRuntimeData();
+	auto render_data = render_manager->GetRendererData();
+	auto render_window = render_manager->GetCurrentRenderWindow();
 
-	INFO("Getting swapchain...");
-	auto swapchain = render_data.swapChain;
+	logger::info("Getting swapchain...");
+	auto swapchain = render_window->swapChain;
 	if (!swapchain) {
 		ERROR("Cannot find swapchain. Initialization failed!");
 		return;
 	}
 
-	INFO("Getting swapchain desc...");
-	DXGI_SWAP_CHAIN_DESC sd{};
+	logger::info("Getting swapchain desc...");
+	REX::W32::DXGI_SWAP_CHAIN_DESC sd{};
 	if (swapchain->GetDesc(std::addressof(sd)) < 0) {
 		ERROR("IDXGISwapChain::GetDesc failed.");
 		return;
 	}
 
-	device = render_data.forwarder;
+	device = render_data->forwarder;
+	ID3D11Device* new_device = reinterpret_cast<ID3D11Device*>(device);
 	Texture::device_ = device;
-	context = render_data.context;
+	context = render_data->context;
+	ID3D11DeviceContext* new_context = reinterpret_cast<ID3D11DeviceContext*>(context);
 
-	INFO("Initializing ImGui...");
+	logger::info("Initializing ImGui...");
 	ImGui::CreateContext();
-	if (!ImGui_ImplWin32_Init(sd.OutputWindow)) {
+	if (!ImGui_ImplWin32_Init(sd.outputWindow)) {
 		ERROR("ImGui initialization failed (Win32)");
 		return;
 	}
-	if (!ImGui_ImplDX11_Init(device, context)) {
+	if (!ImGui_ImplDX11_Init(new_device, new_context)) {
 		ERROR("ImGui initialization failed (DX11)");
 		return;
 	}
 
-	INFO("...ImGui Initialized");
+	logger::info("...ImGui Initialized");
 
 	initialized.store(true);
 
 	WndProcHook::func = reinterpret_cast<WNDPROC>(
 		SetWindowLongPtrA(
-			sd.OutputWindow,
+			sd.outputWindow,
 			GWLP_WNDPROC,
 			reinterpret_cast<LONG_PTR>(WndProcHook::thunk)));
 	if (!WndProcHook::func)
 		ERROR("SetWindowLongPtrA failed!");
 
-	INFO("Building font atlas...");
+	logger::info("Building font atlas...");
 	std::filesystem::path fontPath;
 	bool foundCustomFont = false;
 	const ImWchar* glyphRanges = 0;
@@ -120,28 +123,28 @@ void RenderManager::D3DInitHook::thunk()
 			}
 			if (foundCustomFont) {
 				std::string languageStr = language;
-				INFO("Loading font: {}", fontPath.string().c_str());
+				logger::info("Loading font: {}", fontPath.string().c_str());
 				if (languageStr == "Chinese") {
-					INFO("Glyph range set to Chinese");
+					logger::info("Glyph range set to Chinese");
 					glyphRanges = ImGui::GetIO().Fonts->GetGlyphRangesChineseFull();
 				} else if (languageStr == "Korean") {
-					INFO("Glyph range set to Korean");
+					logger::info("Glyph range set to Korean");
 					glyphRanges = ImGui::GetIO().Fonts->GetGlyphRangesKorean();
 				} else if (languageStr == "Japanese") {
-					INFO("Glyph range set to Japanese");
+					logger::info("Glyph range set to Japanese");
 					glyphRanges = ImGui::GetIO().Fonts->GetGlyphRangesJapanese();
 				} else if (languageStr == "Thai") {
-					INFO("Glyph range set to Thai");
+					logger::info("Glyph range set to Thai");
 					glyphRanges = ImGui::GetIO().Fonts->GetGlyphRangesThai();
 				} else if (languageStr == "Vietnamese") {
-					INFO("Glyph range set to Vietnamese");
+					logger::info("Glyph range set to Vietnamese");
 					glyphRanges = ImGui::GetIO().Fonts->GetGlyphRangesVietnamese();
 				} else if (languageStr == "Cyrillic") {
 					glyphRanges = ImGui::GetIO().Fonts->GetGlyphRangesCyrillic();
-					INFO("Glyph range set to Cyrillic");
+					logger::info("Glyph range set to Cyrillic");
 				}
 			} else {
-				INFO("No font found for language: {}", language);
+				logger::info("No font found for language: {}", language);
 			}
 		}
 	}
@@ -156,9 +159,9 @@ void RenderManager::D3DInitHook::thunk()
 		ImGui::GetIO().Fonts->AddFontFromFileTTF(fontPath.string().c_str(), 64.0f, NULL, glyphRanges);
 	}
 	
-	INFO("...font atlas built");
+	logger::info("...font atlas built");
 
-	INFO("RenderManager: Initialized");
+	logger::info("RenderManager: Initialized");
 
 }
 

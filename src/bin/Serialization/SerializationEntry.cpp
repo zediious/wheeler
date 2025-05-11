@@ -50,16 +50,16 @@ void SerializationEntry::BindSerializationCallbacks(const SKSE::SerializationInt
 }
 void SerializationEntry::Save(SKSE::SerializationInterface* a_intfc)
 {
-	INFO("Serializing wheel into save...");
+	logger::info("Serializing wheel into save...");
 	if (!a_intfc->OpenRecord(WHEELER_JSON_STRING_TYPE, SERIALIZER_VERSION)) {
-		INFO("Failed to open record");
+		logger::info("Failed to open record");
 		return;
 	}
 	nlohmann::json j_wheeler;
 	Wheeler::SerializeIntoJsonObj(j_wheeler);
 	
 	std::string writeBuffer = j_wheeler.dump();
-	INFO("Serializing following record: {}", writeBuffer);
+	logger::info("Serializing following record: {}", writeBuffer);
 	
 	Serial::Write(a_intfc, writeBuffer);
 
@@ -69,27 +69,27 @@ void SerializationEntry::Load(SKSE::SerializationInterface* a_intfc)
 {
 	std::uint32_t type, version, length;
 	if (!a_intfc->GetNextRecordInfo(type, version, length)) {
-		INFO("Failed to obtain record, abort loading");
+		logger::info("Failed to obtain record, abort loading");
 		return;
 	}
 	if (type != WHEELER_JSON_STRING_TYPE) {
-		INFO("Load: wrong type, abort loading");
+		logger::info("Load: wrong type, abort loading");
 		return;
 	}
 	if (version != SERIALIZER_VERSION) {
-		INFO("Load: wrong version, abort loading");
+		logger::info("Load: wrong version, abort loading");
 		return;
 	}
 	std::string readBuffer;
 
 	Serial::Read(a_intfc, readBuffer);
-	INFO("Read str: {}", readBuffer);
+	logger::info("Read str: {}", readBuffer);
 	try {
 		nlohmann::json j_wheeler = nlohmann::json::parse(readBuffer);
 		Wheeler::Clear();
 		Wheeler::SerializeFromJsonObj(j_wheeler, a_intfc);
 	} catch (const std::exception& e) {
-		INFO("Failed to parse json: {}", e.what());
+		logger::info("Failed to parse json: {}", e.what());
 		return;
 	}
 

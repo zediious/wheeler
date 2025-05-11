@@ -5,6 +5,8 @@
 #define NANOSVGRAST_IMPLEMENTATION
 #include "include/lib/nanosvgrast.h"
 
+#include <d3d11.h>
+
 
 void Texture::Init()
 {
@@ -37,17 +39,16 @@ Texture::Image Texture::GetIconImage(icon_image_type a_imageType, RE::TESForm* a
 	return icon_struct[static_cast<int32_t>(a_imageType)];
 }
 
-bool Texture::load_texture_from_file(const char* filename, ID3D11ShaderResourceView** out_srv, int& out_width, int& out_height)
+bool Texture::load_texture_from_file(const char* filename, REX::W32::ID3D11ShaderResourceView** out_srv, int& out_width, int& out_height)
 {
-	ASSERT(device_ != nullptr);
-	auto* render_manager = RE::BSRenderManager::GetSingleton();
+	IM_ASSERT(device_ != nullptr);
+	auto* render_manager = RE::BSGraphics::Renderer::GetSingleton();
 	if (!render_manager) {
 		logger::error("Cannot find render manager. Initialization failed."sv);
 		return false;
 	}
 
-	auto [forwarder, context, unk58, unk60, unk68, swapChain, unk78, unk80, renderView, resourceView] =
-		render_manager->GetRuntimeData();
+	REX::W32::ID3D11Device* forwarder = render_manager->GetRendererData()->forwarder;
 
 	// Load from disk into a raw RGBA buffer
 	auto* svg = nsvgParseFromFile(filename, "px", 96.0f);
@@ -62,33 +63,33 @@ bool Texture::load_texture_from_file(const char* filename, ID3D11ShaderResourceV
 	nsvgDeleteRasterizer(rast);
 
 	// Create texture
-	D3D11_TEXTURE2D_DESC desc;
+	REX::W32::D3D11_TEXTURE2D_DESC desc;
 	ZeroMemory(&desc, sizeof(desc));
-	desc.Width = image_width;
-	desc.Height = image_height;
-	desc.MipLevels = 1;
-	desc.ArraySize = 1;
-	desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	desc.SampleDesc.Count = 1;
-	desc.Usage = D3D11_USAGE_DEFAULT;
-	desc.BindFlags = D3D11_BIND_SHADER_RESOURCE;
-	desc.CPUAccessFlags = 0;
-	desc.MiscFlags = 0;
+	desc.width = image_width;
+	desc.height = image_height;
+	desc.mipLevels = 1;
+	desc.arraySize = 1;
+	desc.format = REX::W32::DXGI_FORMAT_R8G8B8A8_UNORM;
+	desc.sampleDesc.count = 1;
+	desc.usage = REX::W32::D3D11_USAGE_DEFAULT;
+	desc.bindFlags = REX::W32::D3D11_BIND_SHADER_RESOURCE;
+	desc.cpuAccessFlags = 0;
+	desc.miscFlags = 0;
 
-	ID3D11Texture2D* p_texture = nullptr;
-	D3D11_SUBRESOURCE_DATA sub_resource;
-	sub_resource.pSysMem = image_data;
-	sub_resource.SysMemPitch = desc.Width * 4;
-	sub_resource.SysMemSlicePitch = 0;
-	device_->CreateTexture2D(&desc, &sub_resource, &p_texture);
+	REX::W32::ID3D11Texture2D* p_texture = nullptr;
+	REX::W32::D3D11_SUBRESOURCE_DATA sub_resource;
+	sub_resource.sysMem = image_data;
+	sub_resource.sysMemPitch = desc.width * 4;
+	sub_resource.sysMemSlicePitch = 0;
+	forwarder->CreateTexture2D(&desc, &sub_resource, &p_texture);
 
 	// Create texture view
-	D3D11_SHADER_RESOURCE_VIEW_DESC srv_desc;
+	REX::W32::D3D11_SHADER_RESOURCE_VIEW_DESC srv_desc;
 	ZeroMemory(&srv_desc, sizeof srv_desc);
-	srv_desc.Format = DXGI_FORMAT_R8G8B8A8_UNORM;
-	srv_desc.ViewDimension = D3D11_SRV_DIMENSION_TEXTURE2D;
-	srv_desc.Texture2D.MipLevels = desc.MipLevels;
-	srv_desc.Texture2D.MostDetailedMip = 0;
+	srv_desc.format = REX::W32::DXGI_FORMAT_R8G8B8A8_UNORM;
+	srv_desc.viewDimension = REX::W32::D3D11_SRV_DIMENSION_TEXTURE2D;
+	srv_desc.texture2D.mipLevels = desc.mipLevels;
+	srv_desc.texture2D.mostDetailedMip = 0;
 	forwarder->CreateShaderResourceView(p_texture, &srv_desc, out_srv);
 	p_texture->Release();
 

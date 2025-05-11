@@ -173,7 +173,7 @@ void Drawer::draw_text_block(float a_x, float a_y, std::string& a_text, ImU32 a_
 
 
 
-void Drawer::draw_texture(ID3D11ShaderResourceView* a_texture,
+void Drawer::draw_texture(REX::W32::ID3D11ShaderResourceView* a_texture,
 	ImVec2 a_center,
 	float a_offset_x,
 	float a_offset_y,

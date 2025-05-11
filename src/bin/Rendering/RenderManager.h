@@ -40,8 +40,8 @@ private:
 	static void MessageCallback(SKSE::MessagingInterface::Message* msg);
 
 	static inline bool ShowMeters = false;
-	static inline ID3D11Device* device = nullptr;
-	static inline ID3D11DeviceContext* context = nullptr;
+	static inline REX::W32::ID3D11Device* device = nullptr;
+	static inline REX::W32::ID3D11DeviceContext* context = nullptr;
 
 
 public:

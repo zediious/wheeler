@@ -163,7 +163,7 @@ std::shared_ptr<WheelItem> WheelItemFactory::MakeWheelItemFromMenuHovered()
 		}
 	}
 	catch (std::exception exception) {
-		INFO("Exception: {}", exception.what());
+		logger::info("Exception: {}", exception.what());
 	}
 
 	return nullptr;
@@ -252,7 +252,7 @@ std::shared_ptr<WheelItem> WheelItemFactory::MakeWheelItemFromJsonObject(nlohman
 		}
 	}
 	catch (std::exception exception) {
-		INFO("Exception when de-serializing wheel item: {}", exception.what());
+		logger::info("Exception when de-serializing wheel item: {}", exception.what());
 	}
 	
 	return nullptr;

@@ -32,7 +32,7 @@ namespace Drawer
 		float a_line_length,
 		DrawArgs a_drawArgs);
 	
-	void draw_texture(ID3D11ShaderResourceView* a_texture,
+	void draw_texture(REX::W32::ID3D11ShaderResourceView* a_texture,
 		ImVec2 a_center,
 		float a_offset_x, 
 		float a_offset_y,
